@@ -1,0 +1,26 @@
+# Backend: Node.js + Express + TypeScript
+# Multi-stage build: dev and production
+
+FROM node:18-alpine as development
+WORKDIR /app/backend
+COPY backend/package*.json ./
+RUN npm ci
+COPY backend .
+EXPOSE 3001
+CMD ["npm", "run", "dev"]
+
+FROM node:18-alpine as builder
+WORKDIR /app/backend
+COPY backend/package*.json ./
+RUN npm ci
+COPY backend .
+RUN npm run build
+
+FROM node:18-alpine as production
+WORKDIR /app/backend
+COPY backend/package*.json ./
+RUN npm ci --only=production
+COPY --from=builder /app/backend/dist ./dist
+EXPOSE 3001
+ENV NODE_ENV=production
+CMD ["npm", "start"]
