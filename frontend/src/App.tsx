@@ -4,20 +4,47 @@ import './App.css'
 interface Role {
   id: string
   title: string
-  category: string
+  nist_category: string
+  specialty_area: string
+  description: string
+  entry_level: boolean
+  typical_experience_years: number
+  avg_salary_usd: number
+  job_growth_percent: number
 }
 
 export const App: React.FC = () => {
   const [roles, setRoles] = React.useState<Role[]>([])
+  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
+
+  const categories = [
+    'PROTECT_DEFEND',
+    'INVESTIGATE',
+    'SECURELY_PROVISION',
+    'OPERATE_MAINTAIN',
+    'OVERSEE_GOVERN',
+  ]
+
+  const categoryLabels: Record<string, string> = {
+    PROTECT_DEFEND: '🛡️ Protect & Defend',
+    INVESTIGATE: '🔎 Investigate',
+    SECURELY_PROVISION: '🔧 Securely Provision',
+    OPERATE_MAINTAIN: '⚙️ Operate & Maintain',
+    OVERSEE_GOVERN: '📋 Oversee & Govern',
+  }
 
   React.useEffect(() => {
     const fetchRoles = async () => {
       try {
         setLoading(true)
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1'
-        const response = await fetch(`${apiUrl}/roles`)
+        const url = selectedCategory
+          ? `${apiUrl}/roles?category=${selectedCategory}`
+          : `${apiUrl}/roles`
+
+        const response = await fetch(url)
         const json = await response.json()
 
         if (json.success) {
@@ -33,40 +60,87 @@ export const App: React.FC = () => {
     }
 
     fetchRoles()
-  }, [])
+  }, [selectedCategory])
+
+  const filteredRoles = selectedCategory
+    ? roles.filter((r) => r.nist_category === selectedCategory)
+    : roles
 
   return (
     <div className="app">
       <header>
         <h1>🛡️ Cybersecurity Career Tracker</h1>
-        <p>Map your path through the NIST NICE Framework</p>
+        <p>Explore NIST NICE Framework roles and map your cybersecurity career path</p>
       </header>
 
       <main>
-        {loading && <p>Loading roles...</p>}
-        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+        {error && <p style={{ color: '#fca5a5' }}>⚠️ {error}</p>}
 
-        {!loading && !error && (
+        <section className="filters">
+          <h2>Filter by NIST Category</h2>
+          <div className="category-buttons">
+            <button
+              className={!selectedCategory ? 'active' : ''}
+              onClick={() => setSelectedCategory(null)}
+            >
+              All Roles ({roles.length})
+            </button>
+            {categories.map((cat) => {
+              const count = roles.filter((r) => r.nist_category === cat).length
+              return (
+                <button
+                  key={cat}
+                  className={selectedCategory === cat ? 'active' : ''}
+                  onClick={() => setSelectedCategory(cat)}
+                >
+                  {categoryLabels[cat]} ({count})
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        {loading && <p>Loading roles...</p>}
+
+        {!loading && filteredRoles.length > 0 && (
           <>
-            <h2>Roles ({roles.length})</h2>
-            {roles.length === 0 ? (
-              <p>No roles found. Check your backend connection.</p>
-            ) : (
-              <div className="roles-grid">
-                {roles.slice(0, 6).map(role => (
-                  <div key={role.id} className="role-card">
-                    <h3>{role.title}</h3>
-                    <p>{role.category}</p>
+            <h2>Career Roles ({filteredRoles.length})</h2>
+            <div className="roles-grid">
+              {filteredRoles.map((role) => (
+                <div key={role.id} className={`role-card ${role.entry_level ? 'entry-level' : ''}`}>
+                  {role.entry_level && <span className="badge">Entry Level</span>}
+                  <h3>{role.title}</h3>
+                  <p className="specialty">{role.specialty_area}</p>
+                  <p className="description">{role.description}</p>
+                  <div className="role-meta">
+                    <div className="meta-item">
+                      <span className="label">Experience:</span>
+                      <span className="value">{role.typical_experience_years}+ years</span>
+                    </div>
+                    <div className="meta-item">
+                      <span className="label">Salary:</span>
+                      <span className="value">${(role.avg_salary_usd / 1000).toFixed(0)}K</span>
+                    </div>
+                    <div className="meta-item">
+                      <span className="label">Growth:</span>
+                      <span className="value">{role.job_growth_percent}%</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
           </>
+        )}
+
+        {!loading && filteredRoles.length === 0 && (
+          <p>No roles found in this category.</p>
         )}
       </main>
 
       <footer>
-        <p>Built with React + Vite | Backend API at {import.meta.env.VITE_API_URL}</p>
+        <p>
+          🚀 Built with React + Vite | 🐘 PostgreSQL | 📡 Node.js API | 📊 NIST NICE Framework
+        </p>
       </footer>
     </div>
   )
