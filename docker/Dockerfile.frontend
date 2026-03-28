@@ -4,7 +4,7 @@
 FROM node:18-alpine as development
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm install
 COPY frontend .
 EXPOSE 5173
 CMD ["npm", "run", "dev"]
@@ -12,7 +12,7 @@ CMD ["npm", "run", "dev"]
 FROM node:18-alpine as builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm install
 COPY frontend .
 RUN npm run build
 
