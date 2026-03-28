@@ -68,8 +68,10 @@ app.get('/api/v1/roles/:id', async (req: Request, res: Response, next: NextFunct
       data: role,
       timestamp: new Date().toISOString(),
     })
+    return
   } catch (err) {
     next(err)
+    return
   }
 })
 

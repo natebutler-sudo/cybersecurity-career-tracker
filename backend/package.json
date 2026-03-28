@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Career tracking API for cybersecurity professionals",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
     "dev": "tsc && node dist/index.js",
     "build": "tsc",
