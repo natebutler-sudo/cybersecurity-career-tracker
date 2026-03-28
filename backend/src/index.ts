@@ -55,7 +55,14 @@ app.get('/api/v1/roles/entry-level', async (_req: Request, res: Response, next: 
 
 app.get('/api/v1/roles/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const role = await getRoleById(req.params.id) || await getRoleByTitle(req.params.id)
+    let role = null
+    try {
+      role = await getRoleById(req.params.id)
+    } catch {
+      // If UUID parsing fails, try finding by title
+      role = await getRoleByTitle(req.params.id)
+    }
+
     if (!role) {
       return res.status(404).json({
         success: false,
