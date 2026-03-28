@@ -31,9 +31,17 @@ body {
 
 header {
   background: linear-gradient(135deg, #0a0e27 0%, var(--secondary) 100%);
-  padding: 3rem 1rem;
-  text-align: center;
+  padding: 2rem 1rem;
   border-bottom: 2px solid var(--accent);
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
 }
 
 header h1 {
@@ -47,7 +55,39 @@ header p {
   color: var(--text-secondary);
   font-size: 1.1rem;
   max-width: 600px;
-  margin: 0 auto;
+}
+
+.view-nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+}
+
+.view-nav .nav-btn {
+  background: var(--secondary);
+  border: 2px solid var(--border);
+  color: var(--text);
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.view-nav .nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.view-nav .nav-btn.active {
+  background: var(--accent);
+  color: var(--primary);
+  border-color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
 }
 
 main {
@@ -231,6 +271,24 @@ p[style*="color"] {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .view-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .view-nav .nav-btn {
+    flex: 1;
+    max-width: 150px;
+  }
+}
+
 @media (max-width: 768px) {
   header h1 {
     font-size: 1.8rem;
@@ -238,6 +296,20 @@ p[style*="color"] {
 
   header p {
     font-size: 0.95rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .view-nav {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .view-nav .nav-btn {
+    width: 100%;
   }
 
   .roles-grid {

@@ -1,5 +1,6 @@
 import React from 'react'
 import './App.css'
+import CertificationRoadmap from './components/CertificationRoadmap'
 
 interface Role {
   id: string
@@ -13,7 +14,10 @@ interface Role {
   job_growth_percent: number
 }
 
+type ViewType = 'roles' | 'roadmap'
+
 export const App: React.FC = () => {
+  const [currentView, setCurrentView] = React.useState<ViewType>('roles')
   const [roles, setRoles] = React.useState<Role[]>([])
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -69,71 +73,95 @@ export const App: React.FC = () => {
   return (
     <div className="app">
       <header>
-        <h1>🛡️ Cybersecurity Career Tracker</h1>
-        <p>Explore NIST NICE Framework roles and map your cybersecurity career path</p>
+        <div className="header-content">
+          <div>
+            <h1>🛡️ Cybersecurity Career Tracker</h1>
+            <p>Explore NIST NICE Framework roles and map your cybersecurity career path</p>
+          </div>
+          <nav className="view-nav">
+            <button
+              className={`nav-btn ${currentView === 'roles' ? 'active' : ''}`}
+              onClick={() => setCurrentView('roles')}
+            >
+              📋 Career Roles
+            </button>
+            <button
+              className={`nav-btn ${currentView === 'roadmap' ? 'active' : ''}`}
+              onClick={() => setCurrentView('roadmap')}
+            >
+              🗺️ Cert Roadmap
+            </button>
+          </nav>
+        </div>
       </header>
 
       <main>
-        {error && <p style={{ color: '#fca5a5' }}>⚠️ {error}</p>}
-
-        <section className="filters">
-          <h2>Filter by NIST Category</h2>
-          <div className="category-buttons">
-            <button
-              className={!selectedCategory ? 'active' : ''}
-              onClick={() => setSelectedCategory(null)}
-            >
-              All Roles ({roles.length})
-            </button>
-            {categories.map((cat) => {
-              const count = roles.filter((r) => r.nist_category === cat).length
-              return (
-                <button
-                  key={cat}
-                  className={selectedCategory === cat ? 'active' : ''}
-                  onClick={() => setSelectedCategory(cat)}
-                >
-                  {categoryLabels[cat]} ({count})
-                </button>
-              )
-            })}
-          </div>
-        </section>
-
-        {loading && <p>Loading roles...</p>}
-
-        {!loading && filteredRoles.length > 0 && (
+        {currentView === 'roles' ? (
           <>
-            <h2>Career Roles ({filteredRoles.length})</h2>
-            <div className="roles-grid">
-              {filteredRoles.map((role) => (
-                <div key={role.id} className={`role-card ${role.entry_level ? 'entry-level' : ''}`}>
-                  {role.entry_level && <span className="badge">Entry Level</span>}
-                  <h3>{role.title}</h3>
-                  <p className="specialty">{role.specialty_area}</p>
-                  <p className="description">{role.description}</p>
-                  <div className="role-meta">
-                    <div className="meta-item">
-                      <span className="label">Experience:</span>
-                      <span className="value">{role.typical_experience_years}+ years</span>
-                    </div>
-                    <div className="meta-item">
-                      <span className="label">Salary:</span>
-                      <span className="value">${(role.avg_salary_usd / 1000).toFixed(0)}K</span>
-                    </div>
-                    <div className="meta-item">
-                      <span className="label">Growth:</span>
-                      <span className="value">{role.job_growth_percent}%</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+            {error && <p style={{ color: '#fca5a5' }}>⚠️ {error}</p>}
 
-        {!loading && filteredRoles.length === 0 && (
-          <p>No roles found in this category.</p>
+            <section className="filters">
+              <h2>Filter by NIST Category</h2>
+              <div className="category-buttons">
+                <button
+                  className={!selectedCategory ? 'active' : ''}
+                  onClick={() => setSelectedCategory(null)}
+                >
+                  All Roles ({roles.length})
+                </button>
+                {categories.map((cat) => {
+                  const count = roles.filter((r) => r.nist_category === cat).length
+                  return (
+                    <button
+                      key={cat}
+                      className={selectedCategory === cat ? 'active' : ''}
+                      onClick={() => setSelectedCategory(cat)}
+                    >
+                      {categoryLabels[cat]} ({count})
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+
+            {loading && <p>Loading roles...</p>}
+
+            {!loading && filteredRoles.length > 0 && (
+              <>
+                <h2>Career Roles ({filteredRoles.length})</h2>
+                <div className="roles-grid">
+                  {filteredRoles.map((role) => (
+                    <div key={role.id} className={`role-card ${role.entry_level ? 'entry-level' : ''}`}>
+                      {role.entry_level && <span className="badge">Entry Level</span>}
+                      <h3>{role.title}</h3>
+                      <p className="specialty">{role.specialty_area}</p>
+                      <p className="description">{role.description}</p>
+                      <div className="role-meta">
+                        <div className="meta-item">
+                          <span className="label">Experience:</span>
+                          <span className="value">{role.typical_experience_years}+ years</span>
+                        </div>
+                        <div className="meta-item">
+                          <span className="label">Salary:</span>
+                          <span className="value">${(role.avg_salary_usd / 1000).toFixed(0)}K</span>
+                        </div>
+                        <div className="meta-item">
+                          <span className="label">Growth:</span>
+                          <span className="value">{role.job_growth_percent}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {!loading && filteredRoles.length === 0 && (
+              <p>No roles found in this category.</p>
+            )}
+          </>
+        ) : (
+          <CertificationRoadmap />
         )}
       </main>
 
