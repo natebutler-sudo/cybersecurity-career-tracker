@@ -70,6 +70,53 @@ CREATE TABLE role_certifications (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Certification Specializations
+CREATE TABLE specializations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  color VARCHAR(7),  -- hex color for UI
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Many-to-many: Certifications to Specializations
+CREATE TABLE cert_specializations (
+  cert_id UUID NOT NULL REFERENCES certifications(id) ON DELETE CASCADE,
+  specialization_id UUID NOT NULL REFERENCES specializations(id) ON DELETE CASCADE,
+  PRIMARY KEY (cert_id, specialization_id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cert_specializations_spec ON cert_specializations(specialization_id);
+
+-- Certification Metrics (Real-world data: pass rates, demand, salary impact, study time)
+CREATE TABLE cert_metrics (
+  cert_id UUID PRIMARY KEY REFERENCES certifications(id) ON DELETE CASCADE,
+  pass_rate_percent DECIMAL(5,2),  -- e.g., 62.5
+  job_postings_monthly INT,  -- estimated monthly job postings
+  avg_salary_increase_usd INT,  -- average salary increase after certification
+  study_hours_estimate INT,  -- hours needed to prepare
+  vendor_pass_rate_source VARCHAR(255),  -- where data comes from
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cert_metrics_salary ON cert_metrics(avg_salary_increase_usd);
+CREATE INDEX idx_cert_metrics_pass_rate ON cert_metrics(pass_rate_percent);
+CREATE INDEX idx_cert_metrics_demand ON cert_metrics(job_postings_monthly);
+
+-- Certification Prerequisites
+CREATE TABLE cert_prerequisites (
+  cert_id UUID NOT NULL REFERENCES certifications(id) ON DELETE CASCADE,
+  prerequisite_cert_id UUID NOT NULL REFERENCES certifications(id) ON DELETE CASCADE,
+  is_required BOOLEAN DEFAULT true,  -- true=required, false=recommended
+  PRIMARY KEY (cert_id, prerequisite_cert_id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cert_prerequisites_prereq ON cert_prerequisites(prerequisite_cert_id);
+
 -- Career Progression Paths
 CREATE TABLE progression_paths (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -118,4 +165,6 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_roles_timestamp BEFORE UPDATE ON roles FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 CREATE TRIGGER update_skills_timestamp BEFORE UPDATE ON skills FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 CREATE TRIGGER update_certifications_timestamp BEFORE UPDATE ON certifications FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+CREATE TRIGGER update_specializations_timestamp BEFORE UPDATE ON specializations FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+CREATE TRIGGER update_cert_metrics_timestamp BEFORE UPDATE ON cert_metrics FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 CREATE TRIGGER update_progression_paths_timestamp BEFORE UPDATE ON progression_paths FOR EACH ROW EXECUTE FUNCTION update_timestamp();

@@ -206,3 +206,126 @@ WHERE p.name = 'Developer to Security Architect' AND r.title = 'Security Softwar
 INSERT INTO progression_steps (path_id, role_id, step_order, typical_duration_years)
 SELECT p.id, r.id, 3, 5 FROM progression_paths p, roles r
 WHERE p.name = 'Developer to Security Architect' AND r.title = 'Enterprise Security Architect';
+
+-- ============================================
+-- CERTIFICATION SPECIALIZATIONS
+-- ============================================
+
+INSERT INTO specializations (name, description, color) VALUES
+('Network Security', 'Network defense, monitoring, and intrusion detection', '#3498db'),
+('Cloud Security', 'Cloud infrastructure, AWS, Azure, GCP security', '#2ecc71'),
+('Incident Response & Forensics', 'Digital forensics, incident investigation, analysis', '#e74c3c'),
+('Identity & Access Management', 'IAM, authentication, authorization, compliance', '#f39c12'),
+('Threat Intelligence & Analysis', 'Threat hunting, malware analysis, intelligence', '#9b59b6'),
+('Security Architecture', 'Enterprise security design, systems architecture', '#1abc9c');
+
+-- ============================================
+-- MAP CERTIFICATIONS TO SPECIALIZATIONS
+-- ============================================
+
+-- Network Security specialization
+INSERT INTO cert_specializations (cert_id, specialization_id)
+SELECT c.id, s.id FROM certifications c, specializations s
+WHERE c.name IN ('Network+', 'Security+', 'CySA+', 'CASP+', 'GIAC Certified Intrusion Analyst (GCIA)', 'GIAC Security Essentials (GSEC)')
+AND s.name = 'Network Security';
+
+-- Cloud Security specialization
+INSERT INTO cert_specializations (cert_id, specialization_id)
+SELECT c.id, s.id FROM certifications c, specializations s
+WHERE c.name IN ('AWS Certified Security – Specialty', 'Microsoft Certified: Azure Security Engineer Associate', 'Certified Cloud Security Professional (CCSP)')
+AND s.name = 'Cloud Security';
+
+-- Incident Response & Forensics specialization
+INSERT INTO cert_specializations (cert_id, specialization_id)
+SELECT c.id, s.id FROM certifications c, specializations s
+WHERE c.name IN ('GIAC Certified Forensic Examiner (GCFE)', 'GIAC Certified Incident Handler (GCIH)', 'Certified Information Systems Auditor (CISA)')
+AND s.name = 'Incident Response & Forensics';
+
+-- Threat Intelligence & Analysis specialization
+INSERT INTO cert_specializations (cert_id, specialization_id)
+SELECT c.id, s.id FROM certifications c, specializations s
+WHERE c.name IN ('Certified Ethical Hacker (CEH)', 'Offensive Security Certified Professional (OSCP)', 'Offensive Security Web Expert (OSWE)')
+AND s.name = 'Threat Intelligence & Analysis';
+
+-- Security Architecture specialization
+INSERT INTO cert_specializations (cert_id, specialization_id)
+SELECT c.id, s.id FROM certifications c, specializations s
+WHERE c.name IN ('Certified Information Systems Security Professional (CISSP)', 'Certified Information Security Manager (CISM)', 'CASP+')
+AND s.name = 'Security Architecture';
+
+-- Identity & Access Management specialization
+INSERT INTO cert_specializations (cert_id, specialization_id)
+SELECT c.id, s.id FROM certifications c, specializations s
+WHERE c.name IN ('Security+', 'GIAC Security Essentials (GSEC)')
+AND s.name = 'Identity & Access Management';
+
+-- ============================================
+-- CERTIFICATION METRICS (Real-world data)
+-- ============================================
+
+INSERT INTO cert_metrics (cert_id, pass_rate_percent, job_postings_monthly, avg_salary_increase_usd, study_hours_estimate, vendor_pass_rate_source) VALUES
+-- CompTIA Certifications
+((SELECT id FROM certifications WHERE name = 'A+'), 65.0, 800, 8000, 150, 'CompTIA Official Data'),
+((SELECT id FROM certifications WHERE name = 'Network+'), 68.0, 1200, 10000, 160, 'CompTIA Official Data'),
+((SELECT id FROM certifications WHERE name = 'Security+'), 62.5, 3500, 15000, 120, 'CompTIA Official Data'),
+((SELECT id FROM certifications WHERE name = 'CySA+'), 58.0, 2200, 18000, 140, 'CompTIA Official Data'),
+((SELECT id FROM certifications WHERE name = 'CASP+'), 55.0, 1100, 25000, 180, 'CompTIA Official Data'),
+
+-- EC-Council
+((SELECT id FROM certifications WHERE name = 'Certified Ethical Hacker (CEH)'), 60.0, 1800, 20000, 150, 'EC-Council Data'),
+
+-- GIAC/SANS (Higher difficulty, lower pass rate)
+((SELECT id FROM certifications WHERE name = 'GIAC Security Essentials (GSEC)'), 45.0, 500, 22000, 200, 'GIAC Official Data'),
+((SELECT id FROM certifications WHERE name = 'GIAC Certified Incident Handler (GCIH)'), 48.0, 700, 24000, 210, 'GIAC Official Data'),
+((SELECT id FROM certifications WHERE name = 'GIAC Certified Intrusion Analyst (GCIA)'), 42.0, 400, 28000, 250, 'GIAC Official Data'),
+((SELECT id FROM certifications WHERE name = 'GIAC Certified Forensic Examiner (GCFE)'), 44.0, 450, 26000, 240, 'GIAC Official Data'),
+
+-- (ISC)² Certifications (Enterprise-level)
+((SELECT id FROM certifications WHERE name = 'Certified Information Systems Security Professional (CISSP)'), 63.0, 2000, 35000, 250, '(ISC)² Official Data'),
+((SELECT id FROM certifications WHERE name = 'Certified Information Security Manager (CISM)'), 60.0, 1500, 32000, 220, '(ISC)² Official Data'),
+((SELECT id FROM certifications WHERE name = 'Certified Cloud Security Professional (CCSP)'), 58.0, 1200, 28000, 200, '(ISC)² Official Data'),
+
+-- ISACA
+((SELECT id FROM certifications WHERE name = 'Certified Information Systems Auditor (CISA)'), 56.0, 900, 25000, 180, 'ISACA Official Data'),
+
+-- Cloud Certifications
+((SELECT id FROM certifications WHERE name = 'AWS Certified Security – Specialty'), 65.0, 3000, 20000, 140, 'AWS Official Data'),
+((SELECT id FROM certifications WHERE name = 'Microsoft Certified: Azure Security Engineer Associate'), 68.0, 2500, 18000, 120, 'Microsoft Official Data'),
+
+-- Offensive Security (Hands-on, higher difficulty)
+((SELECT id FROM certifications WHERE name = 'Offensive Security Certified Professional (OSCP)'), 50.0, 600, 35000, 300, 'Offensive Security Data'),
+((SELECT id FROM certifications WHERE name = 'Offensive Security Web Expert (OSWE)'), 48.0, 200, 40000, 350, 'Offensive Security Data');
+
+-- ============================================
+-- CERTIFICATION PREREQUISITES
+-- ============================================
+
+-- Security+ before CEH
+INSERT INTO cert_prerequisites (cert_id, prerequisite_cert_id, is_required)
+SELECT c1.id, c2.id, true FROM certifications c1, certifications c2
+WHERE c1.name = 'Certified Ethical Hacker (CEH)' AND c2.name = 'Security+';
+
+-- Security+ before CISSP (recommended)
+INSERT INTO cert_prerequisites (cert_id, prerequisite_cert_id, is_required)
+SELECT c1.id, c2.id, false FROM certifications c1, certifications c2
+WHERE c1.name = 'Certified Information Systems Security Professional (CISSP)' AND c2.name = 'Security+';
+
+-- Network+ before CySA+ (recommended)
+INSERT INTO cert_prerequisites (cert_id, prerequisite_cert_id, is_required)
+SELECT c1.id, c2.id, false FROM certifications c1, certifications c2
+WHERE c1.name = 'CySA+' AND c2.name = 'Network+';
+
+-- Security+ before CASP+ (recommended)
+INSERT INTO cert_prerequisites (cert_id, prerequisite_cert_id, is_required)
+SELECT c1.id, c2.id, false FROM certifications c1, certifications c2
+WHERE c1.name = 'CASP+' AND c2.name = 'Security+';
+
+-- GSEC before GCIH (recommended)
+INSERT INTO cert_prerequisites (cert_id, prerequisite_cert_id, is_required)
+SELECT c1.id, c2.id, false FROM certifications c1, certifications c2
+WHERE c1.name = 'GIAC Certified Incident Handler (GCIH)' AND c2.name = 'GIAC Security Essentials (GSEC)';
+
+-- Security+ before CCSP (recommended)
+INSERT INTO cert_prerequisites (cert_id, prerequisite_cert_id, is_required)
+SELECT c1.id, c2.id, false FROM certifications c1, certifications c2
+WHERE c1.name = 'Certified Cloud Security Professional (CCSP)' AND c2.name = 'Security+';

@@ -3,7 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import { getRoles, getRoleById, getRoleByTitle, getEntryRoles, getRoleSkills, getRoleCertifications } from './models/Role'
 import { getSkills } from './models/Skill'
-import { getCertifications } from './models/Certification'
+import { getCertifications, getSpecializations, getCertificationMetrics, getCertificationPrerequisites, getSpecializationRoadmap, getSpecializationById, getCertificationsBySpecialization } from './models/Certification'
 
 dotenv.config()
 
@@ -137,6 +137,97 @@ app.get('/api/v1/certifications', async (_req: Request, res: Response, next: Nex
     res.json({
       success: true,
       data: certs,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+app.get('/api/v1/certifications/:id/metrics', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const metrics = await getCertificationMetrics(req.params.id)
+    if (!metrics) {
+      return res.status(404).json({
+        success: false,
+        error: 'Metrics not found',
+        timestamp: new Date().toISOString(),
+      })
+    }
+    res.json({
+      success: true,
+      data: metrics,
+      timestamp: new Date().toISOString(),
+    })
+    return
+  } catch (err) {
+    next(err)
+    return
+  }
+})
+
+app.get('/api/v1/certifications/:id/prerequisites', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const prerequisites = await getCertificationPrerequisites(req.params.id)
+    res.json({
+      success: true,
+      data: prerequisites,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ============================================
+// SPECIALIZATION & ROADMAP ENDPOINTS
+// ============================================
+
+app.get('/api/v1/specializations', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const specs = await getSpecializations()
+    res.json({
+      success: true,
+      data: specs,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+app.get('/api/v1/specializations/:id/roadmap', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const spec = await getSpecializationById(req.params.id)
+    if (!spec) {
+      return res.status(404).json({
+        success: false,
+        error: 'Specialization not found',
+        timestamp: new Date().toISOString(),
+      })
+    }
+    const certs = await getCertificationsBySpecialization(req.params.id)
+    res.json({
+      success: true,
+      data: {
+        specialization: spec,
+        certifications: certs,
+      },
+      timestamp: new Date().toISOString(),
+    })
+    return
+  } catch (err) {
+    next(err)
+    return
+  }
+})
+
+app.get('/api/v1/certifications/roadmap', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const roadmap = await getSpecializationRoadmap()
+    res.json({
+      success: true,
+      data: roadmap,
       timestamp: new Date().toISOString(),
     })
   } catch (err) {
