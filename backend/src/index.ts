@@ -1,6 +1,9 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { getRoles, getRoleById, getRoleByTitle, getEntryRoles, getRoleSkills, getRoleCertifications } from './models/Role'
+import { getSkills, getSkillsByCategory } from './models/Skill'
+import { getCertifications, getCertificationsByDifficulty } from './models/Certification'
 
 dotenv.config()
 
@@ -19,36 +22,116 @@ app.get('/health', (req, res) => {
   })
 })
 
-// API v1 Routes (placeholder)
-app.get('/api/v1/roles', async (req, res) => {
+// ============================================
+// ROLES ENDPOINTS
+// ============================================
+
+app.get('/api/v1/roles', async (req, res, next) => {
   try {
-    // TODO: Fetch from database
+    const category = req.query.category as string | undefined
+    const roles = await getRoles(category)
     res.json({
       success: true,
-      data: [
-        {
-          id: '1',
-          title: 'SOC Analyst',
-          category: 'PROTECT_DEFEND',
-          nist_category: 'Protect and Defend',
-          description: 'Monitor security alerts and respond to incidents',
-        },
-        {
-          id: '2',
-          title: 'Security Engineer',
-          category: 'SECURELY_PROVISION',
-          nist_category: 'Securely Provision',
-          description: 'Design and implement secure systems',
-        },
-      ],
+      data: roles,
       timestamp: new Date().toISOString(),
     })
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err instanceof Error ? err.message : 'Internal server error',
+    next(err)
+  }
+})
+
+app.get('/api/v1/roles/entry-level', async (req, res, next) => {
+  try {
+    const roles = await getEntryRoles()
+    res.json({
+      success: true,
+      data: roles,
       timestamp: new Date().toISOString(),
     })
+  } catch (err) {
+    next(err)
+  }
+})
+
+app.get('/api/v1/roles/:id', async (req, res, next) => {
+  try {
+    const role = await getRoleById(req.params.id) || await getRoleByTitle(req.params.id)
+    if (!role) {
+      return res.status(404).json({
+        success: false,
+        error: 'Role not found',
+        timestamp: new Date().toISOString(),
+      })
+    }
+    res.json({
+      success: true,
+      data: role,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+app.get('/api/v1/roles/:id/skills', async (req, res, next) => {
+  try {
+    const skills = await getRoleSkills(req.params.id)
+    res.json({
+      success: true,
+      data: skills,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+app.get('/api/v1/roles/:id/certifications', async (req, res, next) => {
+  try {
+    const certs = await getRoleCertifications(req.params.id)
+    res.json({
+      success: true,
+      data: certs,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ============================================
+// SKILLS ENDPOINTS
+// ============================================
+
+app.get('/api/v1/skills', async (req, res, next) => {
+  try {
+    const category = req.query.category as string | undefined
+    const skills = await getSkills(category)
+    res.json({
+      success: true,
+      data: skills,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// ============================================
+// CERTIFICATIONS ENDPOINTS
+// ============================================
+
+app.get('/api/v1/certifications', async (req, res, next) => {
+  try {
+    const difficulty = req.query.difficulty as string | undefined
+    const certs = await getCertifications(difficulty)
+    res.json({
+      success: true,
+      data: certs,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (err) {
+    next(err)
   }
 })
 
@@ -76,4 +159,7 @@ app.use(
 app.listen(PORT, () => {
   console.log(`🚀 Backend running on http://localhost:${PORT}`)
   console.log(`📍 API: http://localhost:${PORT}/api/v1`)
+  console.log(`📊 Roles: GET /api/v1/roles`)
+  console.log(`📋 Skills: GET /api/v1/skills`)
+  console.log(`📜 Certifications: GET /api/v1/certifications`)
 })
