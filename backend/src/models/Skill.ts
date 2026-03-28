@@ -30,5 +30,5 @@ export const getSkillsByCategory = async (category: string): Promise<Skill[]> =>
 
 export const getSkillCategories = async (): Promise<string[]> => {
   const result = await query('SELECT DISTINCT category FROM skills ORDER BY category')
-  return result.rows.map((row) => row.category)
+  return result.rows.map((row: { category: string }) => row.category)
 }

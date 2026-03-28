@@ -39,7 +39,7 @@ export const getCertificationsByDifficulty = async (difficulty: string): Promise
 
 export const getCertificationDifficulties = async (): Promise<string[]> => {
   const result = await query('SELECT DISTINCT difficulty FROM certifications ORDER BY difficulty')
-  return result.rows.map((row) => row.difficulty)
+  return result.rows.map((row: { difficulty: string }) => row.difficulty)
 }
 
 export const getCertificationsForRole = async (roleId: string): Promise<Certification[]> => {

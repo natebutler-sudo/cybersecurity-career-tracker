@@ -1,9 +1,9 @@
-import express from 'express'
+import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { getRoles, getRoleById, getRoleByTitle, getEntryRoles, getRoleSkills, getRoleCertifications } from './models/Role'
-import { getSkills, getSkillsByCategory } from './models/Skill'
-import { getCertifications, getCertificationsByDifficulty } from './models/Certification'
+import { getSkills } from './models/Skill'
+import { getCertifications } from './models/Certification'
 
 dotenv.config()
 
@@ -15,7 +15,7 @@ app.use(cors())
 app.use(express.json())
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({
     success: true,
     data: { status: 'ok', timestamp: new Date().toISOString() },
@@ -26,9 +26,9 @@ app.get('/health', (req, res) => {
 // ROLES ENDPOINTS
 // ============================================
 
-app.get('/api/v1/roles', async (req, res, next) => {
+app.get('/api/v1/roles', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const category = req.query.category as string | undefined
+    const category = _req.query.category as string | undefined
     const roles = await getRoles(category)
     res.json({
       success: true,
@@ -40,7 +40,7 @@ app.get('/api/v1/roles', async (req, res, next) => {
   }
 })
 
-app.get('/api/v1/roles/entry-level', async (req, res, next) => {
+app.get('/api/v1/roles/entry-level', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const roles = await getEntryRoles()
     res.json({
@@ -53,7 +53,7 @@ app.get('/api/v1/roles/entry-level', async (req, res, next) => {
   }
 })
 
-app.get('/api/v1/roles/:id', async (req, res, next) => {
+app.get('/api/v1/roles/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const role = await getRoleById(req.params.id) || await getRoleByTitle(req.params.id)
     if (!role) {
@@ -73,7 +73,7 @@ app.get('/api/v1/roles/:id', async (req, res, next) => {
   }
 })
 
-app.get('/api/v1/roles/:id/skills', async (req, res, next) => {
+app.get('/api/v1/roles/:id/skills', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const skills = await getRoleSkills(req.params.id)
     res.json({
@@ -86,7 +86,7 @@ app.get('/api/v1/roles/:id/skills', async (req, res, next) => {
   }
 })
 
-app.get('/api/v1/roles/:id/certifications', async (req, res, next) => {
+app.get('/api/v1/roles/:id/certifications', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const certs = await getRoleCertifications(req.params.id)
     res.json({
@@ -103,9 +103,9 @@ app.get('/api/v1/roles/:id/certifications', async (req, res, next) => {
 // SKILLS ENDPOINTS
 // ============================================
 
-app.get('/api/v1/skills', async (req, res, next) => {
+app.get('/api/v1/skills', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const category = req.query.category as string | undefined
+    const category = _req.query.category as string | undefined
     const skills = await getSkills(category)
     res.json({
       success: true,
@@ -121,9 +121,9 @@ app.get('/api/v1/skills', async (req, res, next) => {
 // CERTIFICATIONS ENDPOINTS
 // ============================================
 
-app.get('/api/v1/certifications', async (req, res, next) => {
+app.get('/api/v1/certifications', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const difficulty = req.query.difficulty as string | undefined
+    const difficulty = _req.query.difficulty as string | undefined
     const certs = await getCertifications(difficulty)
     res.json({
       success: true,
@@ -136,7 +136,7 @@ app.get('/api/v1/certifications', async (req, res, next) => {
 })
 
 // 404 handler
-app.use((req, res) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     error: 'Not found',
@@ -146,7 +146,7 @@ app.use((req, res) => {
 
 // Error handler
 app.use(
-  (err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  (err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error(err)
     res.status(500).json({
       success: false,
